@@ -1,0 +1,38 @@
+{
+  "name": "pouch-box",
+  "version": "1.0.0",
+  "description": "Asymetrical encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/**/*.js test/*.js | tap-spec",
+    "build": "browserify ./ > dist/pouch-box.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jo/pouch-box.git"
+  },
+  "keywords": [
+    "pouchdb",
+    "couchdb",
+    "crypto",
+    "nacl",
+    "curve25519"
+  ],
+  "author": "Johannes J. Schmidt <schmidt@netzmerk.com> (http://die-tf.de/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jo/pouch-box/issues"
+  },
+  "homepage": "https://github.com/jo/pouch-box",
+  "dependencies": {
+    "transform-pouch": "^1.0.1",
+    "tweetnacl": "^0.13.0"
+  },
+  "devDependencies": {
+    "browserify": "^9.0.8",
+    "memdown": "^1.0.0",
+    "pouchdb": "^3.4.0",
+    "tap-spec": "^3.0.0",
+    "tape": "^4.0.0"
+  }
+}
