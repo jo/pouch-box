@@ -17,6 +17,8 @@ The use of this widely ported cryptography library makes it possible to
 implement this encryption schema in other, possibly more secure platforms, for
 example with Python and CouchDB.
 
+**:warning: Only to play around! Don't use it.**
+
 ## Installation
 pouch-box is [hosted on npm](https://www.npmjs.com/package/pouch-box).
 
@@ -243,5 +245,3 @@ var nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
 ```sh
 npm test
 ```
-
-(c) 2015 Johannes J. Schmidt, TF
