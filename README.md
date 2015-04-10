@@ -1,5 +1,5 @@
 # pouch-box
-Asymetrical encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.
+Asymmetric encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.
 
 ## DARC
 * Decentralized authentication

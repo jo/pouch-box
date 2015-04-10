@@ -1,7 +1,7 @@
 {
   "name": "pouch-box",
   "version": "1.0.0",
-  "description": "Asymetrical encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.",
+  "description": "Asymmetric encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.",
   "main": "index.js",
   "scripts": {
     "test": "tape test/**/*.js test/*.js | tap-spec",
