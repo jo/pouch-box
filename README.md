@@ -17,7 +17,7 @@ The use of this widely ported cryptography library makes it possible to
 implement this encryption schema in other, possibly more secure platforms, for
 example with Python and CouchDB.
 
-**:warning: Only to play around! Don't use it.**
+**:warning: Only to play around! Not yet ready for production use.**
 
 ## Installation
 pouch-box is [hosted on npm](https://www.npmjs.com/package/pouch-box).
