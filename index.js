@@ -50,7 +50,7 @@ exports.box = function(sessionKeyPair) {
         mybox.close()
       }
 
-      return db
+      return databaseKey
     })
 }
 

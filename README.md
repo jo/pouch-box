@@ -50,8 +50,8 @@ var keyPair = require('tweetnacl').box.keyPair()
 // }
 
 db.box(keyPair)
-  .then(function() {
-    // db is encrypted now :P
+  .then(function(databaseKeyPair) {
+    // db is encrypted with `databaseKeyPair` now :P
   })
 
 // and later...

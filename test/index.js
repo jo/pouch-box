@@ -12,6 +12,10 @@ test('basics', function(t) {
   var db = new PouchDB(dbname, { db: memdown })
 
   db.box(keyPair)
+    .then(function(databaseKeyPair) {
+      t.ok(databaseKeyPair.publicKey, 'returns database public key')
+      t.ok(databaseKeyPair.secretKey, 'returns database secret key')
+    })
     .then(function() {
       return db.put({ foo: 'bar' }, 'baz')
     })
