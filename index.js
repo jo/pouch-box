@@ -46,9 +46,7 @@ exports.box = function(sessionKeyPair) {
         outgoing: mybox.open
       })
 
-      db.closeBox = function() {
-        mybox.close()
-      }
+      db.closeBox = mybox.close
 
       return databaseKey
     })
