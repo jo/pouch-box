@@ -1,6 +1,8 @@
 # pouch-box
 Asymmetric encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.
 
+[![Build Status](https://travis-ci.org/jo/pouch-box.svg?branch=master)](https://travis-ci.org/jo/pouch-box)
+
 ## DARC
 * Decentralized authentication
 * Access control per document
