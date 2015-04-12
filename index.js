@@ -1,8 +1,12 @@
+var nacl = require('tweetnacl')
+var Promise = require('pouchdb-promise')
+
 var permit = require('./lib/permit')
 var box = require('./lib/box')
-var nacl = require('tweetnacl')
 var ddoc = require('./lib/ddoc')
+
 var untouched = function(doc) { return doc }
+
 
 exports.transform = require('transform-pouch').transform
 
