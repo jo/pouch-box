@@ -9,7 +9,7 @@ var untouched = function(doc) { return doc }
 
 exports.transform = require('transform-pouch').transform
 
-exports.box = function(sessionKeyPair) {
+exports.box = function(sessionKeyPair, receivers) {
   var db = this
   var mypermit = permit(sessionKeyPair)
 
@@ -146,7 +146,7 @@ exports.box = function(sessionKeyPair) {
     
     // setup transform pouch
     .then(function() {
-      var mybox = box(mypermit.databaseKey)
+      var mybox = box(mypermit.databaseKey, receivers)
 
       db.transform({
         incoming: mybox,
@@ -156,10 +156,6 @@ exports.box = function(sessionKeyPair) {
       db.closeBox = mybox.close
 
       return mypermit
-    })
-    .catch(function(err) {
-      console.error('Error: ', err)
-      console.log(err.stack)
     })
 }
 

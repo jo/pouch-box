@@ -61,6 +61,29 @@ test('reopen', function(t) {
     .then(t.end)
 })
 
+test('share', function(t) {
+  var alice = new PouchDB(dbname + '-share', { db: memdown })
+  var bob = new PouchDB(dbname + '-share', { db: memdown })
+  
+  var aliceKey = nacl.box.keyPair()
+  var bobKey = nacl.box.keyPair()
+
+  alice.box(aliceKey)
+    .then(function(alicePermit) {
+      return bob.box(bobKey, [alicePermit.databaseKey.publicKey])
+        .then(function() {
+          return bob.put({ foo: 'bar' }, 'baz')
+        })
+        .then(function(asd) {
+          return alice.get('baz')
+        })
+        .then(function(doc) {
+          t.equals(doc.foo, 'bar', 'decrypts data')
+        })
+        .then(t.end)
+    })
+})
+
 test('conflicts', function(t) {
   var db = new PouchDB(dbname, { db: memdown })
   var other = new PouchDB(dbname + '-other', { db: memdown })
