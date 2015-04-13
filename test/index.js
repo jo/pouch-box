@@ -14,11 +14,11 @@ test('basics', function(t) {
   var receiver
 
   db.box(keyPair)
-    .then(function(databaseKeyPair) {
-      receiver = nacl.util.encodeBase64(databaseKeyPair.publicKey)
+    .then(function(permit) {
+      receiver = permit.receiver()
       
-      t.ok(databaseKeyPair.publicKey, 'returns database public key')
-      t.ok(databaseKeyPair.secretKey, 'returns database secret key')
+      t.ok(permit.databaseKey.publicKey, 'returns database public key')
+      t.ok(permit.databaseKey.secretKey, 'returns database secret key')
     })
     .then(function() {
       return db.put({ foo: 'bar' }, 'baz')
@@ -79,8 +79,8 @@ test('conflicts', function(t) {
     .then(function() {
       return db.box(keyPair)
     })
-    .then(function(databaseKeyPair) {
-      receiver = nacl.util.encodeBase64(databaseKeyPair.publicKey)
+    .then(function(permit) {
+      receiver = permit.receiver()
     })
     .then(function() {
       return db.get(permitId, { conflicts: true })

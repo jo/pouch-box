@@ -23,13 +23,15 @@ test('build', function(t) {
   var sessionKey = nacl.box.keyPair()
   var databaseKey = nacl.box.keyPair()
 
-  var doc = permit(sessionKey)
-  doc.build(databaseKey)
+  var doc = permit(sessionKey, databaseKey).build()
 
   t.equal(doc.nonce.length, nacl.box.nonceLength,
     'nonce has correct length')
   t.equal(doc.ephemeral.length, nacl.box.publicKeyLength,
     'ephemeral has correct length')
+  
+  t.deepEqual(doc.sessionKey, sessionKey, 'has session key')
+  t.deepEqual(doc.databaseKey, databaseKey, 'has database key')
   
   t.end()
 })
@@ -53,7 +55,7 @@ test('toJSON', function(t) {
   t.end()
 })
 
-test('open', function(t) {
+test('decryption', function(t) {
   var json = {
     type: 'curve25519-xsalsa20-poly1305',
     nonce: 'am250mPbUgzEcZh3tv4ENykhq9jeRFpe',
@@ -70,7 +72,7 @@ test('open', function(t) {
   var doc = permit(sessionKey)
   doc.parse(json)
 
-  t.deepEqual(doc.open(), databaseKey, 'decrypts permit')
+  t.deepEqual(doc.databaseKey, databaseKey, 'decrypts permit')
 
   t.end()
 })

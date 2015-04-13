@@ -52,8 +52,15 @@ var keyPair = require('tweetnacl').box.keyPair()
 // }
 
 db.box(keyPair)
-  .then(function(databaseKeyPair) {
-    // db is encrypted with `databaseKeyPair` now :P
+  .then(function(permit) {
+    // db is encrypted with `permit.databaseKey` now :P
+    //
+    // You can query docs which you can decrypt via
+    // db.query('box/receivers', {
+    //   key: permit.receiver(),
+    //   reduce: false,
+    //   include_docs: true
+    // })
   })
 
 // and later...

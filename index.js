@@ -1,4 +1,3 @@
-var nacl = require('tweetnacl')
 var Promise = require('pouchdb-promise')
 
 var permit = require('./lib/permit')
@@ -41,7 +40,7 @@ exports.box = function(sessionKeyPair) {
 
         return db.put(doc)
           .then(function(resp) {
-            doc._rev = resp.rev
+            mypermit._rev = resp.rev
           })
       }
       
@@ -53,8 +52,6 @@ exports.box = function(sessionKeyPair) {
     .then(function() {
       // if conflicts, resolve and use the new permit
       if (mypermit._conflicts) {
-        var permits
-        
         return db
           // fetch other conflicting revisions
           .get(mypermit._id, {
@@ -62,70 +59,55 @@ exports.box = function(sessionKeyPair) {
           })
           // parse other conflicting revisions
           .then(function(conflicts) {
-            permits = conflicts
+            return conflicts
               .map(function(conflict) {
-                var p = permit(sessionKeyPair)
-                p.parse(conflict.ok)
-                return p
+                return permit(sessionKeyPair)
+                  .parse(conflict.ok)
               })
               .concat(mypermit)
           })
-          // open all permits
-          .then(function() {
-            return permits.map(function(p) {
-              return p.open()
-            })
-          })
-          // calculate receiver keys
-          .then(function(databaseKeys) {
-            return databaseKeys.map(function(key) {
-              return nacl.util.encodeBase64(key.publicKey)
-            })
-          })
           // query receiver counts
-          .then(function(receivers) {
-            return db.query('permit/receivers', {
-              keys: receivers,
-              group: true
-            })
-          })
-          // remember receiver counts
-          .then(function(counts) {
-            counts.rows.forEach(function(row, i) {
-              permits[i].count = row.value
-            })
-          })
-          // sort by receiver counts
-          .then(function() {
-            permits.sort(function(a, b) {
-              if (a.count === b.count) return 0
+          .then(function(permits) {
+            return db
+              .query('box/receivers', {
+                keys: permits.map(function(p) {
+                  return p.receiver()
+                }),
+                group: true
+              })
+              // remember receiver counts
+              .then(function(counts) {
+                counts.rows.forEach(function(row, i) {
+                  permits[i].count = row.value
+                })
 
-              return a.count > b.count ? 1 : -1
-            })
+                // sort by receiver counts
+                return permits.sort(function(a, b) {
+                  if (a.count === b.count) return 0
+
+                  return a.count > b.count ? 1 : -1
+                })
+              })
           })
           // convert permits
-          .then(function() {
+          .then(function(permits) {
             var choosenPermit = permits.pop()
-            var choosenDatabaseKey = choosenPermit.open()
-            var choosenBox = box(choosenDatabaseKey)
+            var choosenBox = box(choosenPermit.databaseKey)
 
             return Promise
               .all(permits.map(function(p) {
-                var key = p.open()
-                var receiver = nacl.util.encodeBase64(key.publicKey)
-
                 if (p.count === 0) return db.remove(p._id, p._rev)
 
                 return db
                   // get docs for receiver
-                  .query('permit/receivers', {
+                  .query('box/receivers', {
                     reduce: false,
-                    key: receiver,
+                    key: p.receiver(),
                     include_docs: true
                   })
                   // decrypt docs
                   .then(function(view) {
-                    var pbox = box(key)
+                    var pbox = box(p.databaseKey)
                     return view.rows.map(function(row) {
                       return pbox.open(row.doc)
                     })
@@ -162,15 +144,9 @@ exports.box = function(sessionKeyPair) {
     })
     
     
-    // open permit
-    .then(function() {
-      return mypermit.open()
-    })
-   
-    
     // setup transform pouch
-    .then(function(databaseKey) {
-      var mybox = box(databaseKey)
+    .then(function() {
+      var mybox = box(mypermit.databaseKey)
 
       db.transform({
         incoming: mybox,
@@ -179,7 +155,11 @@ exports.box = function(sessionKeyPair) {
 
       db.closeBox = mybox.close
 
-      return databaseKey
+      return mypermit
+    })
+    .catch(function(err) {
+      console.error('Error: ', err)
+      console.log(err.stack)
     })
 }
 
