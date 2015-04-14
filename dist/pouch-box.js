@@ -5608,8 +5608,6 @@ var permit = require('./lib/permit')
 var box = require('./lib/box')
 var ddoc = require('./lib/ddoc')
 
-var untouched = function(doc) { return doc }
-
 
 exports.transform = require('transform-pouch').transform
 
