@@ -5762,7 +5762,8 @@ exports.box = function(sessionKeyPair, receivers) {
 }
 
 if (typeof window !== 'undefined' && window.PouchDB) {
+  window.nacl = require('tweetnacl')
   window.PouchDB.plugin(module.exports)
 }
 
-},{"./lib/box":1,"./lib/ddoc":2,"./lib/permit":3,"pouchdb-promise":45,"transform-pouch":63}]},{},[88]);
+},{"./lib/box":1,"./lib/ddoc":2,"./lib/permit":3,"pouchdb-promise":45,"transform-pouch":63,"tweetnacl":87}]},{},[88]);

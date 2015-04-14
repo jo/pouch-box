@@ -158,5 +158,6 @@ exports.box = function(sessionKeyPair, receivers) {
 }
 
 if (typeof window !== 'undefined' && window.PouchDB) {
+  window.nacl = require('tweetnacl')
   window.PouchDB.plugin(module.exports)
 }
