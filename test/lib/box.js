@@ -81,12 +81,7 @@ test('encrypt for multiple receivers', function(t) {
     }
   })
 
-  t.equal(doc._id, 'mydoc', 'has correct _id')
-  t.notOk('text' in doc, 'does not not have text')
-  t.ok('ephemeral' in doc, 'has ephemeral')
-  t.ok('nonce' in doc, 'has nonce')
   t.ok('receivers' in doc, 'has receivers')
-  t.ok('box' in doc, 'has box')
   receivers
     .concat(databaseKey.publicKey)
     .map(function(receiver) {
@@ -133,10 +128,6 @@ test('decrypt multiple receivers', function(t) {
     'YU/nXYHZTEeB27cxV0AaYkFHlHlGmNNm/YsDUiw/r0s='
   ]
   
-  t.equal(doc._id, 'mydoc', 'has correct _id')
-  t.notOk('ephemeral' in doc, 'does not have ephemeral')
-  t.notOk('nonce' in doc, 'does not have nonce')
-  t.notOk('box' in doc, 'does not have box')
   t.equal(doc.text, 'secret text', 'has correct text')
   t.ok('receivers' in doc, 'has receivers')
   receivers
