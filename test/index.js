@@ -21,15 +21,15 @@ test('basics', function(t) {
       t.ok(permit.databaseKey.secretKey, 'returns database secret key')
     })
     .then(function() {
-      return db.put({ foo: 'bar' }, 'baz')
+      return db.put({ box: { foo: 'bar' } }, 'baz')
     })
     .then(function() {
       return db.get('baz')
     })
     .then(function(doc) {
-      t.equals(doc.foo, 'bar', 'decrypts data')
-      t.ok(doc.receivers, 'has receivers')
-      t.ok(receiver in doc.receivers, 'has the receiver')
+      t.equals(doc.box.foo, 'bar', 'decrypts data')
+      t.ok(doc.box.receivers, 'has receivers')
+      t.ok(receiver in doc.box.receivers, 'has the receiver')
     })
     .then(function() {
       db.closeBox()
@@ -38,12 +38,9 @@ test('basics', function(t) {
       return db.get('baz')
     })
     .then(function(doc) {
-      t.notOk(doc.foo, 'does not have foo')
-      t.ok(doc.ephemeral, 'has ephemeral')
-      t.ok(doc.nonce, 'has nonce')
-      t.ok(doc.receivers, 'has receivers')
-      t.ok(receiver in doc.receivers, 'has the receiver')
-      t.ok(doc.box, 'has box')
+      t.notOk(doc.box.foo, 'does not have foo')
+      t.ok(doc.box.receivers, 'has receivers')
+      t.ok(receiver in doc.box.receivers, 'has the receiver')
     })
     .then(t.end)
 })
@@ -56,7 +53,7 @@ test('reopen', function(t) {
       return db.get('baz')
     })
     .then(function(doc) {
-      t.equals(doc.foo, 'bar', 'decrypts data')
+      t.equals(doc.box.foo, 'bar', 'decrypts data')
     })
     .then(t.end)
 })
@@ -72,13 +69,13 @@ test('share', function(t) {
     .then(function(alicePermit) {
       return bob.box(bobKey, [alicePermit.databaseKey.publicKey])
         .then(function() {
-          return bob.put({ foo: 'bar' }, 'baz')
+          return bob.put({ box: { foo: 'bar' } }, 'baz')
         })
         .then(function(asd) {
           return alice.get('baz')
         })
         .then(function(doc) {
-          t.equals(doc.foo, 'bar', 'decrypts data')
+          t.equals(doc.box.foo, 'bar', 'decrypts data')
         })
         .then(t.end)
     })
@@ -91,7 +88,7 @@ test('conflicts', function(t) {
 
   other.box(keyPair)
     .then(function() {
-      return other.put({ foo: 'otherbar' }, 'otherbaz')
+      return other.put({ box: { foo: 'otherbar' } }, 'otherbaz')
     })
     .then(function() {
       other.closeBox()
@@ -115,10 +112,9 @@ test('conflicts', function(t) {
       return db.get('otherbaz')
     })
     .then(function(doc) {
-      t.equals(doc.foo, 'otherbar', 'decrypts data')
-      t.ok(doc.receivers, 'has receivers')
-      t.ok(receiver in doc.receivers, 'has the receiver')
+      t.equals(doc.box.foo, 'otherbar', 'decrypts data')
+      t.ok(doc.box.receivers, 'has receivers')
+      t.ok(receiver in doc.box.receivers, 'has the receiver')
     })
     .then(t.end)
-    .catch(console.error.bind(console))
 })
