@@ -200,15 +200,17 @@ In order to create the doc permit we
 ```json
 {
   "_id" : "a069f1041735910cf8f613d20000116b",
-  "ephemeral" : "PuiUBvQY+7ZFPXXUQ1N2eNE9tgPgIkT1uWj9rpShwXY=",
-  "nonce": "zGDblW4Ov8sMKG3YcV/BISueH+REtDr3",
-  "receivers": {
-    "2XiwPX1U6pKPitmhyeubV9g4YYxtIxNfMNE6B5keEmg=": {
-      "nonce": "pSquTTn+/I7REorstK6hSYeKizajtu65",
-      "encryptedKey": "GXEfX7V3IwA0izAAJ3HIRCzxDFIUfxMq82QO49ITwKzbi+S+5TanJ/9ubmxOUyBh"
-    }
-  },
-  "box": "D9xRZl+/k0gvdBx33CGKaGfLTH731T6jhkMXfh9GfVxETGmTcpzqSJNQ42GPzsafycpdSd7ZTTWBO2vXu06dCha/X8P8C+F6Po+LeerJhKgG"
+  "box": {
+    "ephemeral" : "PuiUBvQY+7ZFPXXUQ1N2eNE9tgPgIkT1uWj9rpShwXY=",
+    "nonce": "zGDblW4Ov8sMKG3YcV/BISueH+REtDr3",
+    "receivers": {
+      "2XiwPX1U6pKPitmhyeubV9g4YYxtIxNfMNE6B5keEmg=": {
+        "nonce": "pSquTTn+/I7REorstK6hSYeKizajtu65",
+        "encryptedKey": "GXEfX7V3IwA0izAAJ3HIRCzxDFIUfxMq82QO49ITwKzbi+S+5TanJ/9ubmxOUyBh"
+      }
+    },
+    "cipher": "D9xRZl+/k0gvdBx33CGKaGfLTH731T6jhkMXfh9GfVxETGmTcpzqSJNQ42GPzsafycpdSd7ZTTWBO2vXu06dCha/X8P8C+F6Po+LeerJhKgG"
+  }
 }
 ```
 
@@ -226,27 +228,29 @@ var nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
 
 {
   _id: pouchdb.utils.uuid(32),
-  ephemeral: nacl.util.encodeBase64(ephemeralKeyPair.publicKey),
-  nonce: nacl.util.encodeBase64(ephemeralNonce),
-  receivers: {
-    [nacl.util.encodeBase64(databaseKeyPair.publicKey)]: {
-      nonce: nacl.util.encodeBase64(nonce),
-      encryptedKey: nacl.util.encodeBase64(nacl.box(
-        key,
-        nonce,
-        databaseKeyPair.publicKey,
-        ephemeralKeyPair.secretKey
-      ))
-    }
-  },
-  box: nacl.util.encodeBase64(nacl.secretbox(
-    nacl.util.decodeUTF8(JSON.stringify({
-      text: 'A secure text.',
-      createdAt: new Date()
-    )),
-    nonce,
-    key
-  ))
+  box: {
+    ephemeral: nacl.util.encodeBase64(ephemeralKeyPair.publicKey),
+    nonce: nacl.util.encodeBase64(ephemeralNonce),
+    receivers: {
+      [nacl.util.encodeBase64(databaseKeyPair.publicKey)]: {
+        nonce: nacl.util.encodeBase64(nonce),
+        encryptedKey: nacl.util.encodeBase64(nacl.box(
+          key,
+          nonce,
+          databaseKeyPair.publicKey,
+          ephemeralKeyPair.secretKey
+        ))
+      }
+    },
+    cipher: nacl.util.encodeBase64(nacl.secretbox(
+      nacl.util.decodeUTF8(JSON.stringify({
+        text: 'A secure text.',
+        createdAt: new Date()
+      )),
+      nonce,
+      key
+    ))
+  }
 }
 ```
 
