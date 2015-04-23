@@ -3,7 +3,7 @@ var PouchDB = require('pouchdb')
 var memdown = require('memdown')
 var nacl = require('tweetnacl')
 
-PouchDB.plugin(require('../'))
+PouchDB.plugin(require('./'))
 
 var keyPair = nacl.box.keyPair()
 var permitId = 'permit/' + nacl.util.encodeBase64(keyPair.publicKey)

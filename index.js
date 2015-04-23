@@ -1,9 +1,23 @@
+var permit = require('couch-nacl-permit')
+var box = require('couch-box')
 var Promise = require('pouchdb-promise')
 
-var permit = require('./lib/permit')
-var box = require('./lib/box')
-var ddoc = require('./lib/ddoc')
+var ddoc = {
+  _id: '_design/box',
+  views: {
+    receivers: {
+      map: function(doc) {
+        if (typeof doc.box !== 'object') return
+        if (typeof doc.box.receivers !== 'object') return
 
+        for (var receiver in doc.box.receivers) {
+          emit(receiver, null)
+        }
+      }.toString(),
+      reduce: '_count'
+    }
+  }
+}
 
 exports.transform = require('transform-pouch').transform
 
