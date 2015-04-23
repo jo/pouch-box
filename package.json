@@ -1,6 +1,6 @@
 {
   "name": "pouch-box",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Asymmetric encrypted PouchDB, powered by NaCl's curve25519-xsalsa20-poly1305.",
   "main": "index.js",
   "scripts": {
