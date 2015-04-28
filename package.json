@@ -27,6 +27,7 @@
   "dependencies": {
     "couch-box": "^1.0.1",
     "couch-nacl-permit": "^1.0.0",
+    "pouchdb-promise": "0.0.0",
     "transform-pouch": "^1.0.1",
     "tweetnacl": "^0.13.1"
   },
@@ -34,7 +35,6 @@
     "browserify": "^9.0.8",
     "memdown": "^1.0.0",
     "pouchdb": "^3.4.0",
-    "pouchdb-promise": "0.0.0",
     "tap-spec": "^3.0.0",
     "tape": "^4.0.0"
   }
