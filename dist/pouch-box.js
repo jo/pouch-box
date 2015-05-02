@@ -1,4 +1,66 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+},{}],2:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
+    }
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],3:[function(require,module,exports){
 var nacl = require('tweetnacl')
 
 module.exports = function box(databaseKey, receivers) {
@@ -60,6 +122,7 @@ module.exports = function box(databaseKey, receivers) {
     if (turnedOff) return doc
     if (typeof doc.box !== 'object') return doc
     if (typeof doc.box.receivers !== 'object') return doc
+    if (typeof doc.box.receivers[sender] !== 'object') return doc
 
     var permit = doc.box.receivers[sender]
     var key = nacl.box.open(
@@ -104,32 +167,17 @@ module.exports = function box(databaseKey, receivers) {
   return box
 }
 
-},{"tweetnacl":48}],2:[function(require,module,exports){
-module.exports = {
-  _id: '_design/box',
-  views: {
-    receivers: {
-      map: function(doc) {
-        if (typeof doc.receivers === 'object') {
-          for (var receiver in doc.receivers) {
-            emit(receiver, null)
-          }
-        }
-      }.toString(),
-      reduce: '_count'
-    }
-  }
-}
-
-},{}],3:[function(require,module,exports){
+},{"tweetnacl":47}],4:[function(require,module,exports){
 var nacl = require('tweetnacl')
 
 module.exports = function permit(sessionKey, databaseKey) {
+  databaseKey = databaseKey || nacl.box.keyPair()
+
   var permit = {
     _id: 'permit/' + nacl.util.encodeBase64(sessionKey.publicKey),
     type: 'curve25519-xsalsa20-poly1305',
     sessionKey: sessionKey,
-    databaseKey: databaseKey || nacl.box.keyPair()
+    databaseKey: databaseKey
   }
 
   permit.toJSON = function() {
@@ -186,69 +234,7 @@ module.exports = function permit(sessionKey, databaseKey) {
   return permit
 }
 
-},{"tweetnacl":48}],4:[function(require,module,exports){
-
-},{}],5:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    draining = true;
-    var currentQueue;
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        var i = -1;
-        while (++i < len) {
-            currentQueue[i]();
-        }
-        len = queue.length;
-    }
-    draining = false;
-}
-process.nextTick = function (fun) {
-    queue.push(fun);
-    if (!draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],6:[function(require,module,exports){
+},{"tweetnacl":47}],5:[function(require,module,exports){
 (function (global){
 if (typeof global.Promise === 'function') {
   module.exports = global.Promise;
@@ -256,13 +242,13 @@ if (typeof global.Promise === 'function') {
   module.exports = require('bluebird');
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"bluebird":10}],7:[function(require,module,exports){
+},{"bluebird":9}],6:[function(require,module,exports){
 'use strict';
 
 module.exports = INTERNAL;
 
 function INTERNAL() {}
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 var Promise = require('./promise');
 var reject = require('./reject');
@@ -306,7 +292,7 @@ module.exports = function all(iterable) {
     }
   }
 };
-},{"./INTERNAL":7,"./handlers":9,"./promise":11,"./reject":13,"./resolve":14}],9:[function(require,module,exports){
+},{"./INTERNAL":6,"./handlers":8,"./promise":10,"./reject":12,"./resolve":13}],8:[function(require,module,exports){
 'use strict';
 var tryCatch = require('./tryCatch');
 var resolveThenable = require('./resolveThenable');
@@ -352,13 +338,13 @@ function getThen(obj) {
     };
   }
 }
-},{"./resolveThenable":15,"./states":16,"./tryCatch":17}],10:[function(require,module,exports){
+},{"./resolveThenable":14,"./states":15,"./tryCatch":16}],9:[function(require,module,exports){
 module.exports = exports = require('./promise');
 
 exports.resolve = require('./resolve');
 exports.reject = require('./reject');
 exports.all = require('./all');
-},{"./all":8,"./promise":11,"./reject":13,"./resolve":14}],11:[function(require,module,exports){
+},{"./all":7,"./promise":10,"./reject":12,"./resolve":13}],10:[function(require,module,exports){
 'use strict';
 
 var unwrap = require('./unwrap');
@@ -404,7 +390,7 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
   return promise;
 };
 
-},{"./INTERNAL":7,"./queueItem":12,"./resolveThenable":15,"./states":16,"./unwrap":18}],12:[function(require,module,exports){
+},{"./INTERNAL":6,"./queueItem":11,"./resolveThenable":14,"./states":15,"./unwrap":17}],11:[function(require,module,exports){
 'use strict';
 var handlers = require('./handlers');
 var unwrap = require('./unwrap');
@@ -433,7 +419,7 @@ QueueItem.prototype.callRejected = function (value) {
 QueueItem.prototype.otherCallRejected = function (value) {
   unwrap(this.promise, this.onRejected, value);
 };
-},{"./handlers":9,"./unwrap":18}],13:[function(require,module,exports){
+},{"./handlers":8,"./unwrap":17}],12:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./promise');
@@ -445,7 +431,7 @@ function reject(reason) {
 	var promise = new Promise(INTERNAL);
 	return handlers.reject(promise, reason);
 }
-},{"./INTERNAL":7,"./handlers":9,"./promise":11}],14:[function(require,module,exports){
+},{"./INTERNAL":6,"./handlers":8,"./promise":10}],13:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./promise');
@@ -480,7 +466,7 @@ function resolve(value) {
       return EMPTYSTRING;
   }
 }
-},{"./INTERNAL":7,"./handlers":9,"./promise":11}],15:[function(require,module,exports){
+},{"./INTERNAL":6,"./handlers":8,"./promise":10}],14:[function(require,module,exports){
 'use strict';
 var handlers = require('./handlers');
 var tryCatch = require('./tryCatch');
@@ -513,13 +499,13 @@ function safelyResolveThenable(self, thenable) {
   }
 }
 exports.safely = safelyResolveThenable;
-},{"./handlers":9,"./tryCatch":17}],16:[function(require,module,exports){
+},{"./handlers":8,"./tryCatch":16}],15:[function(require,module,exports){
 // Lazy man's symbols for states
 
 exports.REJECTED = ['REJECTED'];
 exports.FULFILLED = ['FULFILLED'];
 exports.PENDING = ['PENDING'];
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 module.exports = tryCatch;
@@ -535,7 +521,7 @@ function tryCatch(func, value) {
   }
   return out;
 }
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 var immediate = require('immediate');
@@ -557,7 +543,7 @@ function unwrap(promise, func, value) {
     }
   });
 }
-},{"./handlers":9,"immediate":19}],19:[function(require,module,exports){
+},{"./handlers":8,"immediate":18}],18:[function(require,module,exports){
 'use strict';
 var types = [
   require('./nextTick'),
@@ -599,7 +585,7 @@ function immediate(task) {
     scheduleDrain();
   }
 }
-},{"./messageChannel":20,"./mutation.js":21,"./nextTick":4,"./stateChange":22,"./timeout":23}],20:[function(require,module,exports){
+},{"./messageChannel":19,"./mutation.js":20,"./nextTick":1,"./stateChange":21,"./timeout":22}],19:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -620,7 +606,7 @@ exports.install = function (func) {
   };
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function (global){
 'use strict';
 //based off rsvp https://github.com/tildeio/rsvp.js
@@ -645,7 +631,7 @@ exports.install = function (handle) {
   };
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -672,7 +658,7 @@ exports.install = function (handle) {
   };
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 exports.test = function () {
   return true;
@@ -683,7 +669,7 @@ exports.install = function (t) {
     setTimeout(t, 0);
   };
 };
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var utils = require('./pouch-utils');
@@ -821,7 +807,7 @@ if (typeof window !== 'undefined' && window.PouchDB) {
   window.PouchDB.plugin(exports);
 }
 
-},{"./pouch-utils":47,"pouchdb-wrappers":45}],25:[function(require,module,exports){
+},{"./pouch-utils":46,"pouchdb-wrappers":44}],24:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -846,9 +832,9 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],26:[function(require,module,exports){
-arguments[4][7][0].apply(exports,arguments)
-},{"dup":7}],27:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
+arguments[4][6][0].apply(exports,arguments)
+},{"dup":6}],26:[function(require,module,exports){
 'use strict';
 var Promise = require('./promise');
 var reject = require('./reject');
@@ -892,16 +878,16 @@ function all(iterable) {
     }
   }
 }
-},{"./INTERNAL":26,"./handlers":28,"./promise":30,"./reject":33,"./resolve":34}],28:[function(require,module,exports){
-arguments[4][9][0].apply(exports,arguments)
-},{"./resolveThenable":35,"./states":36,"./tryCatch":37,"dup":9}],29:[function(require,module,exports){
+},{"./INTERNAL":25,"./handlers":27,"./promise":29,"./reject":32,"./resolve":33}],27:[function(require,module,exports){
+arguments[4][8][0].apply(exports,arguments)
+},{"./resolveThenable":34,"./states":35,"./tryCatch":36,"dup":8}],28:[function(require,module,exports){
 module.exports = exports = require('./promise');
 
 exports.resolve = require('./resolve');
 exports.reject = require('./reject');
 exports.all = require('./all');
 exports.race = require('./race');
-},{"./all":27,"./promise":30,"./race":32,"./reject":33,"./resolve":34}],30:[function(require,module,exports){
+},{"./all":26,"./promise":29,"./race":31,"./reject":32,"./resolve":33}],29:[function(require,module,exports){
 'use strict';
 
 var unwrap = require('./unwrap');
@@ -947,9 +933,9 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
   return promise;
 };
 
-},{"./INTERNAL":26,"./queueItem":31,"./resolveThenable":35,"./states":36,"./unwrap":38}],31:[function(require,module,exports){
-arguments[4][12][0].apply(exports,arguments)
-},{"./handlers":28,"./unwrap":38,"dup":12}],32:[function(require,module,exports){
+},{"./INTERNAL":25,"./queueItem":30,"./resolveThenable":34,"./states":35,"./unwrap":37}],30:[function(require,module,exports){
+arguments[4][11][0].apply(exports,arguments)
+},{"./handlers":27,"./unwrap":37,"dup":11}],31:[function(require,module,exports){
 'use strict';
 var Promise = require('./promise');
 var reject = require('./reject');
@@ -990,29 +976,29 @@ function race(iterable) {
     });
   }
 }
-},{"./INTERNAL":26,"./handlers":28,"./promise":30,"./reject":33,"./resolve":34}],33:[function(require,module,exports){
+},{"./INTERNAL":25,"./handlers":27,"./promise":29,"./reject":32,"./resolve":33}],32:[function(require,module,exports){
+arguments[4][12][0].apply(exports,arguments)
+},{"./INTERNAL":25,"./handlers":27,"./promise":29,"dup":12}],33:[function(require,module,exports){
 arguments[4][13][0].apply(exports,arguments)
-},{"./INTERNAL":26,"./handlers":28,"./promise":30,"dup":13}],34:[function(require,module,exports){
+},{"./INTERNAL":25,"./handlers":27,"./promise":29,"dup":13}],34:[function(require,module,exports){
 arguments[4][14][0].apply(exports,arguments)
-},{"./INTERNAL":26,"./handlers":28,"./promise":30,"dup":14}],35:[function(require,module,exports){
+},{"./handlers":27,"./tryCatch":36,"dup":14}],35:[function(require,module,exports){
 arguments[4][15][0].apply(exports,arguments)
-},{"./handlers":28,"./tryCatch":37,"dup":15}],36:[function(require,module,exports){
+},{"dup":15}],36:[function(require,module,exports){
 arguments[4][16][0].apply(exports,arguments)
 },{"dup":16}],37:[function(require,module,exports){
 arguments[4][17][0].apply(exports,arguments)
-},{"dup":17}],38:[function(require,module,exports){
+},{"./handlers":27,"dup":17,"immediate":38}],38:[function(require,module,exports){
 arguments[4][18][0].apply(exports,arguments)
-},{"./handlers":28,"dup":18,"immediate":39}],39:[function(require,module,exports){
+},{"./messageChannel":39,"./mutation.js":40,"./nextTick":1,"./stateChange":41,"./timeout":42,"dup":18}],39:[function(require,module,exports){
 arguments[4][19][0].apply(exports,arguments)
-},{"./messageChannel":40,"./mutation.js":41,"./nextTick":4,"./stateChange":42,"./timeout":43,"dup":19}],40:[function(require,module,exports){
+},{"dup":19}],40:[function(require,module,exports){
 arguments[4][20][0].apply(exports,arguments)
 },{"dup":20}],41:[function(require,module,exports){
 arguments[4][21][0].apply(exports,arguments)
 },{"dup":21}],42:[function(require,module,exports){
 arguments[4][22][0].apply(exports,arguments)
 },{"dup":22}],43:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"dup":23}],44:[function(require,module,exports){
 "use strict";
 
 // Extends method
@@ -1193,7 +1179,7 @@ module.exports = extend;
 
 
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 /*
     Copyright 2014, Marten de Vries
 
@@ -1685,7 +1671,7 @@ function uninstallWrappers(base, handlers) {
   }
 }
 
-},{"promise-nodify":46}],46:[function(require,module,exports){
+},{"promise-nodify":45}],45:[function(require,module,exports){
 /*
   Copyright 2013-2014, Marten de Vries
 
@@ -1714,7 +1700,7 @@ module.exports = function nodify(promise, callback) {
   }
 };
 
-},{}],47:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function (process,global){
 'use strict';
 
@@ -1808,7 +1794,7 @@ exports.isLocalId = function (id) {
   return (/^_local/).test(id);
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":5,"inherits":25,"lie":29,"pouchdb-extend":44}],48:[function(require,module,exports){
+},{"_process":2,"inherits":24,"lie":28,"pouchdb-extend":43}],47:[function(require,module,exports){
 (function (Buffer){
 (function(nacl) {
 'use strict';
@@ -4232,13 +4218,27 @@ nacl.setPRNG = function(fn) {
 })(typeof module !== 'undefined' && module.exports ? module.exports : (window.nacl = window.nacl || {}));
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":4,"crypto":4}],49:[function(require,module,exports){
+},{"buffer":1,"crypto":1}],48:[function(require,module,exports){
+var permit = require('couch-nacl-permit')
+var box = require('couch-box')
 var Promise = require('pouchdb-promise')
 
-var permit = require('./lib/permit')
-var box = require('./lib/box')
-var ddoc = require('./lib/ddoc')
+var ddoc = {
+  _id: '_design/box',
+  views: {
+    receivers: {
+      map: function(doc) {
+        if (typeof doc.box !== 'object') return
+        if (typeof doc.box.receivers !== 'object') return
 
+        for (var receiver in doc.box.receivers) {
+          emit(receiver, null)
+        }
+      }.toString(),
+      reduce: '_count'
+    }
+  }
+}
 
 exports.transform = require('transform-pouch').transform
 
@@ -4397,4 +4397,4 @@ if (typeof window !== 'undefined' && window.PouchDB) {
   window.PouchDB.plugin(module.exports)
 }
 
-},{"./lib/box":1,"./lib/ddoc":2,"./lib/permit":3,"pouchdb-promise":6,"transform-pouch":24,"tweetnacl":48}]},{},[49]);
+},{"couch-box":3,"couch-nacl-permit":4,"pouchdb-promise":5,"transform-pouch":23,"tweetnacl":47}]},{},[48]);
